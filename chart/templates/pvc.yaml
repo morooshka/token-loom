@@ -1,0 +1,16 @@
+---
+# Persistent volume for model storage
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: token-loom-models
+  labels:
+    app: token-loom
+spec:
+  accessModes:
+    - {{ .Values.persistence.accessMode }}
+  storageClassName: {{ .Values.persistence.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.size }}

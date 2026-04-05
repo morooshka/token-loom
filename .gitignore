@@ -21,6 +21,9 @@ Thumbs.db
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
+# Claude Code
+.claude/
+
 # Miscelaneous
 poetry.toml
 pyproject.toml

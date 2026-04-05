@@ -1,0 +1,96 @@
+---
+# Runs the Ollama server with a model
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: token-loom
+  labels:
+    app: token-loom
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: token-loom
+  template:
+    metadata:
+      labels:
+        app: token-loom
+    spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: model-pull
+          image: {{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}
+          imagePullPolicy: {{ .Values.ollama.image.pullPolicy }}
+          env:
+            - name: OLLAMA_MODELS
+              value: /var/lib/ollama/models
+            - name: OLLAMA_MODEL
+              value: {{ .Values.ollama.model | quote }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              if ollama list | awk 'NR>1 {print $1}' | grep -qxF "${OLLAMA_MODEL}"; then
+                echo "SUCCESS. Model ${OLLAMA_MODEL} already present. Skipping pulling"
+                exit 0
+              fi
+              
+              echo "Model ${OLLAMA_MODEL} not found. Pulling ..."
+              ollama pull "${OLLAMA_MODEL}" || { echo "FAILED pulling model ${OLLAMA_MODEL}!" 1>&2; exit 1; }
+              
+              echo "SUCCESS. Model ${OLLAMA_MODEL} pulled"
+              exit 0
+          volumeMounts:
+            - name: models
+              mountPath: /var/lib/ollama/models
+      containers:
+        - name: ollama
+          image: {{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}
+          imagePullPolicy: {{ .Values.ollama.image.pullPolicy }}
+          args:
+            - serve
+          env:
+            - name: OLLAMA_MODELS
+              value: /var/lib/ollama/models
+            - name: OLLAMA_NUM_THREAD
+              value: {{ .Values.ollama.numThreads | quote }}
+            - name: OLLAMA_KEEP_ALIVE
+              value: {{ .Values.ollama.keepAlive | quote }}
+          ports:
+            - containerPort: 11434
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 11434
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: {{ .Values.ollama.resources.requests.cpu }}
+              memory: {{ .Values.ollama.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.ollama.resources.limits.cpu }}
+              memory: {{ .Values.ollama.resources.limits.memory }}
+          volumeMounts:
+            - name: models
+              mountPath: /var/lib/ollama/models
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: token-loom-models

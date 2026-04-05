@@ -1,0 +1,8 @@
+apiVersion: v2
+name: token-loom
+description: >-
+  Self-hosted LLM inference platform for Kubernetes,
+  serving an open-source language model via an OpenAI-compatible REST API
+type: application
+version: 0.1.0
+appVersion: "0.6.8"
