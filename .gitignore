@@ -1,0 +1,30 @@
+# Ignore chart dependencies (these are fetched via 'helm dependency build')
+charts/
+tmpcharts/
+
+# Ignore local Helm settings
+.helm/
+.helm-ignore
+
+# Ignore OS system files
+.DS_Store
+Thumbs.db
+
+# If you DO NOT want to store packaged charts along with the code (e.g., you use GitHub Releases), uncomment the line below.
+# However, for our "manual" method, archives must be tracked by Git
+# *.tgz
+
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#  and can be added to the global gitignore or merged into this file.  For a more nuclear
+#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+.idea/
+
+# Claude Code
+.claude/
+
+# Miscelaneous
+poetry.toml
+pyproject.toml
+poetry.lock

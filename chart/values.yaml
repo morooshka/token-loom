@@ -1,0 +1,86 @@
+ollama:
+  image:
+    # Ollama container image. Both the init container and the main container use the same image
+    repository: ollama/ollama
+    tag: "0.6.8"
+    pullPolicy: IfNotPresent
+
+  # Model to serve. Used by the init container to pull the model on first deployment,
+  # and by the main container to load it into RAM on startup.
+  # Switch to qwen2.5-coder:32b for production-grade inference quality
+  model: qwen2.5-coder:7b
+
+  # Number of CPU threads Ollama is allowed to use for inference.
+  # Should not exceed the CPU limit set below
+  numThreads: 4
+
+  # How long Ollama keeps the model loaded in RAM between requests.
+  # -1 means the model stays resident indefinitely, which avoids reload latency on every request
+  keepAlive: -1
+
+  resources:
+    requests:
+      # Minimum CPU guaranteed to the pod. 2000m = 2 cores
+      cpu: 2000m
+      # Minimum memory guaranteed to the pod. Must be enough to hold the model in RAM
+      memory: 8Gi
+    limits:
+      # Maximum CPU the pod may use. Should match numThreads in cores (4 threads = 4000m)
+      cpu: 4000m
+      # Maximum memory the pod may use. Set higher than requests to allow for overhead
+      memory: 12Gi
+
+# Pin the pod to nodes with specific labels, e.g.:
+# nodeSelector:
+#   kubernetes.io/hostname: gpu-node-01
+#   node-role: inference
+nodeSelector: {}
+
+# Control pod placement relative to other pods or node properties, e.g.:
+# affinity:
+#   nodeAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       nodeSelectorTerms:
+#         - matchExpressions:
+#             - key: node-role
+#               operator: In
+#               values:
+#                 - inference
+#   podAntiAffinity:
+#     preferredDuringSchedulingIgnoredDuringExecution:
+#       - weight: 100
+#         podAffinityTerm:
+#           labelSelector:
+#             matchLabels:
+#               app: token-loom
+#           topologyKey: kubernetes.io/hostname
+affinity: {}
+
+service:
+  # Kubernetes Service type. ClusterIP exposes the service only within the cluster.
+  # Use NodePort or LoadBalancer to expose it externally
+  type: ClusterIP
+
+persistence:
+  # StorageClass for the model PVC. Override with a cluster-specific class (e.g. gp2 on EKS)
+  storageClass: standard
+  # Access mode for the PVC. ReadWriteOnce is correct for a single-replica deployment
+  accessMode: ReadWriteOnce
+  # PVC size. 30Gi is sufficient for qwen2.5-coder:7b. Increase to 50Gi for the 32b variant
+  size: 30Gi
+
+livenessProbe:
+  # Seconds to wait after container starts before the first liveness check.
+  # Should be long enough for Ollama to start, but shorter than readiness — we only need
+  # the HTTP server up, not the model loaded
+  initialDelaySeconds: 30
+  # Number of consecutive failures before the pod is restarted
+  failureThreshold: 5
+
+readinessProbe:
+  # Seconds to wait after container starts before the first readiness check.
+  # Allows time for Ollama to load the model from the PVC before traffic is sent
+  initialDelaySeconds: 30
+  # Number of consecutive failures before the pod is marked not ready.
+  # With periodSeconds=30, failureThreshold=20 allows up to ~10 minutes for model load
+  failureThreshold: 20
