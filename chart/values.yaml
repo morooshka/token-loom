@@ -20,7 +20,7 @@ ollama:
 
   resources:
     requests:
-      # Minimum CPU guaranteed to the pod. 2000m = 2 cores
+      # Minimum CPU guaranteed to the pod
       cpu: 2000m
       # Minimum memory guaranteed to the pod. Must be enough to hold the model in RAM
       memory: 8Gi
@@ -58,8 +58,26 @@ affinity: {}
 
 service:
   # Kubernetes Service type. ClusterIP exposes the service only within the cluster.
-  # Use NodePort or LoadBalancer to expose it externally
+  # Use NodePort to expose on a static port on every node, or LoadBalancer to provision
+  # a cloud load balancer. The service exposes port 11434 (fixed by Ollama)
   type: ClusterIP
+
+  # Static node port in the 30000–32767 range. Only used when type is NodePort or LoadBalancer.
+  # Omit to let Kubernetes assign one automatically
+  # nodePort: 30000
+
+  # How external traffic is routed. Cluster (default) spreads load across all nodes;
+  # Local preserves the client source IP but may cause uneven load.
+  # Only used for NodePort and LoadBalancer
+  # externalTrafficPolicy: Cluster
+
+  # Request a specific IP from the cloud provider. Only used for LoadBalancer
+  # loadBalancerIP: ""
+
+  # Restrict inbound traffic to these CIDR blocks. Only used for LoadBalancer
+  # loadBalancerSourceRanges:
+  #   - 10.0.0.0/8
+  #   - 192.168.0.0/16
 
 persistence:
   # StorageClass for the model PVC. Override with a cluster-specific class (e.g. gp2 on EKS)
