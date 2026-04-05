@@ -3,7 +3,18 @@ entries:
   token-loom:
   - apiVersion: v2
     appVersion: 0.6.8
-    created: "2026-04-05T22:21:13.447181579Z"
+    created: "2026-04-05T23:24:13.74341955Z"
+    description: Self-hosted LLM inference platform for Kubernetes, serving an open-source
+      language model via an OpenAI-compatible REST API
+    digest: ab25d15b13f9e43b924eca3c10c973c5effebf528bc40bb3d830b056f9f610ce
+    name: token-loom
+    type: application
+    urls:
+    - https://morooshka.github.io/token-loom/token-loom-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: 0.6.8
+    created: "2026-04-05T23:24:13.743062574Z"
     description: Self-hosted LLM inference platform for Kubernetes, serving an open-source
       language model via an OpenAI-compatible REST API
     digest: e9a33bcca7c6afe0860d88086e220f9da2bee65106657e39ba5f95a88c5c07a3
@@ -12,4 +23,4 @@ entries:
     urls:
     - https://morooshka.github.io/token-loom/token-loom-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-05T22:21:13.446728506Z"
+generated: "2026-04-05T23:24:13.742632753Z"
