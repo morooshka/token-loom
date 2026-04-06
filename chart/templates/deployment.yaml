@@ -26,18 +26,6 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       initContainers:
-        - name: model-server
-          image: {{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}
-          imagePullPolicy: {{ .Values.ollama.image.pullPolicy }}
-          restartPolicy: Always
-          args:
-            - serve
-          env:
-            - name: OLLAMA_MODELS
-              value: /var/lib/ollama/models
-          volumeMounts:
-            - name: models
-              mountPath: /var/lib/ollama/models
         - name: model-pull
           image: {{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}
           imagePullPolicy: {{ .Values.ollama.image.pullPolicy }}
@@ -50,25 +38,31 @@ spec:
             - /bin/sh
             - -c
             - |
+              # Ollama CLI commands (pull, list, etc.) are thin HTTP clients that require a running server.
+              # Start one in the background before any CLI calls
+              ollama serve &
+              SERVE_PID=$!
+              trap 'kill "${SERVE_PID}" 2>/dev/null' EXIT
+
               echo "Waiting for Ollama server to be ready ..."
               until ollama list > /dev/null 2>&1; do sleep 1; done
-              echo "Ollama server is ready"
+              echo "Ollama server is ready!"
 
-              if ollama list | awk 'NR>1 {print $1}' | grep -qxF "${OLLAMA_MODEL}"; then
-                echo "SUCCESS. Model ${OLLAMA_MODEL} already present. Skipping pulling"
-                exit 0
+              echo "Pulling model ${OLLAMA_MODEL} ..."
+              ollama pull "${OLLAMA_MODEL}"
+
+              if [ $? -ne 0 ]; then
+                echo "FAILED pulling model ${OLLAMA_MODEL}!" 1>&2
+                exit 1
               fi
 
-              echo "Model ${OLLAMA_MODEL} not found. Pulling ..."
-              ollama pull "${OLLAMA_MODEL}" || { echo "FAILED pulling model ${OLLAMA_MODEL}!" 1>&2; exit 1; }
-
-              echo "SUCCESS. Model ${OLLAMA_MODEL} pulled"
+              echo "Model ${OLLAMA_MODEL} pulled successfully!"
               exit 0
           volumeMounts:
             - name: models
               mountPath: /var/lib/ollama/models
       containers:
-        - name: ollama
+        - name: base
           image: {{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}
           imagePullPolicy: {{ .Values.ollama.image.pullPolicy }}
           args:
