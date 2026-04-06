@@ -62,7 +62,7 @@ spec:
             - name: models
               mountPath: /var/lib/ollama/models
       containers:
-        - name: ollama
+        - name: base
           image: {{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}
           imagePullPolicy: {{ .Values.ollama.image.pullPolicy }}
           args:
