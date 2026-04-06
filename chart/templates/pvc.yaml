@@ -4,9 +4,9 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: token-loom-models
+  name: inference-models
   labels:
-    app: token-loom
+    app: inference
 spec:
   accessModes:
     - {{ .Values.persistence.accessMode }}

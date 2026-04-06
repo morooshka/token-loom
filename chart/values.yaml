@@ -52,11 +52,14 @@ nodeSelector: {}
 #         podAffinityTerm:
 #           labelSelector:
 #             matchLabels:
-#               app: token-loom
+#               app: inference
 #           topologyKey: kubernetes.io/hostname
 affinity: {}
 
 service:
+  # Set to false to skip creating the Service resource entirely
+  enabled: true
+
   # Kubernetes Service type. ClusterIP exposes the service only within the cluster.
   # Use NodePort to expose on a static port on every node, or LoadBalancer to provision
   # a cloud load balancer. The service exposes port 11434 (fixed by Ollama)
