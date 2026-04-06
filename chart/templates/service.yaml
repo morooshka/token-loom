@@ -1,16 +1,17 @@
+{{- if .Values.service.enabled }}
 ---
 # Exposes the Ollama inference server
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: token-loom
+  name: inference
   labels:
-    app: token-loom
+    app: inference
 spec:
   type: {{ .Values.service.type }}
   selector:
-    app: token-loom
+    app: inference
   {{- if and (ne .Values.service.type "ClusterIP") .Values.service.externalTrafficPolicy }}
   externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
   {{- end }}
@@ -28,3 +29,4 @@ spec:
       {{- if and (ne .Values.service.type "ClusterIP") .Values.service.nodePort }}
       nodePort: {{ .Values.service.nodePort }}
       {{- end }}
+{{- end }}

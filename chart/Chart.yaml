@@ -4,5 +4,5 @@ description: >-
   Self-hosted LLM inference platform for Kubernetes,
   serving an open-source language model via an OpenAI-compatible REST API
 type: application
-version: 0.1.1
+version: 0.1.2
 appVersion: "0.6.8"
