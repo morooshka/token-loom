@@ -9,6 +9,9 @@ metadata:
     app: inference
 spec:
   replicas: 1
+  # Single replica deployment with ReadWriteOnce PVC support
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: inference
