@@ -11,7 +11,8 @@ ollama:
   model: qwen2.5-coder:7b
 
   # Number of CPU threads Ollama is allowed to use for inference.
-  # Should not exceed the CPU limit set below
+  # Keep below the CPU limit — Ollama uses additional CPU for HTTP handling, scheduling, and
+  # other overhead on top of inference threads. Matching the limit exactly causes throttling
   numThreads: 4
 
   # How long Ollama keeps the model loaded in RAM between requests.
